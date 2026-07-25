@@ -1,0 +1,6 @@
+{
+  "name": "RemindCare",
+  "description": "An assistive daily reminder app designed for elderly users and cognitively impaired patients, with robust caregiver controls.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
