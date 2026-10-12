@@ -1,0 +1,39 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isPatient(patientId) {
+      return isAuthenticated() && request.auth.uid == patientId;
+    }
+
+    function isAuthorizedCaregiver(patientId) {
+      return isAuthenticated() &&
+        exists(/databases/$(database)/documents/caregiver_authorizations/$(patientId)) &&
+        get(/databases/$(database)/documents/caregiver_authorizations/$(patientId)).data.caregiverId == request.auth.uid;
+    }
+
+    // Pairing requests: 6-digit handshake codes between patient and caregiver
+    match /pairing_requests/{code} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && request.resource.data.patientId == request.auth.uid;
+      allow update: if isAuthenticated();
+      allow delete: if isAuthenticated();
+    }
+
+    // Caregiver authorization mapping: patient controls authorization
+    match /caregiver_authorizations/{patientId} {
+      allow read: if isAuthenticated() && (request.auth.uid == patientId || isAuthorizedCaregiver(patientId));
+      allow write: if isPatient(patientId) || isAuthorizedCaregiver(patientId);
+    }
+
+    // Patient records, reminders, and history
+    match /patients/{patientId}/{document=**} {
+      allow read, write: if isPatient(patientId) || isAuthorizedCaregiver(patientId);
+    }
+  }
+}
+

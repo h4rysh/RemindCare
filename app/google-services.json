@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "361965741453",
+    "project_id": "remindcareharrish",
+    "storage_bucket": "remindcareharrish.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:361965741453:android:5ffaa58adfb36eae3889c4",
+        "android_client_info": {
+          "package_name": "com.aistudio.remindcare.pqyzwt"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC7zePp4Awf8mCKlxqd8d72Kerk_uMgwVc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
