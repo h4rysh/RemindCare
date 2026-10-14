@@ -32,6 +32,7 @@ fun RemindCareNavGraph(
         composable("welcome") {
             WelcomeScreen(
                 onRoleSelected = { role ->
+                    viewModel.setRole(role)
                     if (role == "Patient") {
                         navController.navigate("patient_setup")
                     } else {

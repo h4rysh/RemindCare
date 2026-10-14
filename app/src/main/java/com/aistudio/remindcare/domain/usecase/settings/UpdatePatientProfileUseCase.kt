@@ -7,6 +7,11 @@ class UpdatePatientProfileUseCase(
 ) {
     suspend operator fun invoke(patientName: String) {
         val current = settingsRepository.getSettingsDirect()
-        settingsRepository.updateSettings(current.copy(patientName = patientName))
+        settingsRepository.updateSettings(
+            current.copy(
+                patientName = patientName,
+                role = "Patient"
+            )
+        )
     }
 }

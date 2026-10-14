@@ -33,6 +33,7 @@ import com.aistudio.remindcare.data.RemindCareRepository
 import com.aistudio.remindcare.receiver.ReminderReceiver
 import com.aistudio.remindcare.ui.RemindCareViewModel
 import com.aistudio.remindcare.ui.theme.*
+import com.aistudio.remindcare.util.GlobalAlarmState
 
 class ReminderAlarmActivity : ComponentActivity() {
 
@@ -70,7 +71,10 @@ class ReminderAlarmActivity : ComponentActivity() {
             val settings by viewModel.settings.collectAsState()
             RemindCareTheme(fontSizeStr = settings.fontSize) {
                 val allReminders by viewModel.allReminders.collectAsState(initial = emptyList())
-                val reminder = allReminders.find { it.id == reminderId }
+                val activeGlobal by GlobalAlarmState.activeAlert.collectAsState()
+                val reminder = remember(allReminders, activeGlobal, reminderId) {
+                    allReminders.find { it.id == reminderId } ?: activeGlobal?.takeIf { it.id == reminderId }
+                }
 
                 if (reminder != null) {
                     var showBypassDialog by remember { mutableStateOf(false) }

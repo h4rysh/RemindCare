@@ -17,7 +17,7 @@ import org.robolectric.annotation.Config
 import java.util.Calendar
 
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [33])
+@Config(sdk = [33], application = android.app.Application::class)
 class ReminderSchedulerTest {
 
     @Test
@@ -113,5 +113,28 @@ class ReminderSchedulerTest {
 
         // Codes for different reminders must not collide
         assertNotEquals(code1Trigger, code2Trigger)
+    }
+
+    @Test
+    fun testScheduleReminderOneMinuteInFutureSchedulesToday() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val futureCal = Calendar.getInstance().apply {
+            add(Calendar.MINUTE, 2)
+        }
+        val hour = futureCal.get(Calendar.HOUR_OF_DAY)
+        val min = futureCal.get(Calendar.MINUTE)
+        val timeStr = String.format("%02d:%02d", hour, min)
+
+        val reminder = Reminder(id = 88, title = "Near Future Meds", type = "Medicine", time = timeStr, repeat = "Daily", isActive = true)
+        ReminderScheduler.scheduleReminder(context, reminder)
+
+        val shadowAlarmManager = shadowOf(context.getSystemService(Context.ALARM_SERVICE) as AlarmManager)
+        val scheduledAlarms = shadowAlarmManager.scheduledAlarms
+        assertTrue(scheduledAlarms.isNotEmpty())
+
+        val scheduled = scheduledAlarms.first { shadowOf(it.operation).savedIntent.getLongExtra(ReminderReceiver.EXTRA_REMINDER_ID, -1L) == 88L }
+        val now = System.currentTimeMillis()
+        // Must be scheduled for today (within 3 minutes), NOT pushed to tomorrow (> 12 hours)
+        assertTrue("Reminder 2 min in future must schedule today", scheduled.triggerAtTime <= now + (180 * 1000L))
     }
 }

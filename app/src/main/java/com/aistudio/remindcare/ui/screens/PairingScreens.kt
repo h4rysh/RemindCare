@@ -2,8 +2,10 @@ package com.aistudio.remindcare.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
@@ -109,7 +111,8 @@ fun PatientPairingScreen(viewModel: RemindCareViewModel, settings: AppSettings, 
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(32.dp),
+                .padding(32.dp)
+                .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
@@ -249,7 +252,8 @@ fun CaregiverPairingScreen(viewModel: RemindCareViewModel, settings: AppSettings
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(24.dp),
+                .padding(24.dp)
+                .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             Text(
@@ -335,7 +339,8 @@ fun CaregiverPairingScreen(viewModel: RemindCareViewModel, settings: AppSettings
                 }
             }
 
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.weight(1f, fill = false))
+            Spacer(modifier = Modifier.height(16.dp))
 
             Button(
                 onClick = {

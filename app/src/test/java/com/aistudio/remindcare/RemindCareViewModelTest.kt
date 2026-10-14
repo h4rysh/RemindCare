@@ -40,7 +40,10 @@ class RemindCareViewModelTest {
     
     @After
     fun tearDown() {
-        Dispatchers.resetMain()
+        try {
+            testDispatcher.scheduler.advanceUntilIdle()
+            Dispatchers.resetMain()
+        } catch (_: Exception) {}
     }
 
     @Test

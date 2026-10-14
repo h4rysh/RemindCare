@@ -1,7 +1,9 @@
 package com.aistudio.remindcare.ui.screens
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -30,7 +32,8 @@ fun PatientSetupScreen(viewModel: RemindCareViewModel, onComplete: () -> Unit) {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(24.dp),
+                .padding(24.dp)
+                .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             Text(
@@ -60,7 +63,8 @@ fun PatientSetupScreen(viewModel: RemindCareViewModel, onComplete: () -> Unit) {
                 )
             )
 
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.weight(1f, fill = false))
+            Spacer(modifier = Modifier.height(16.dp))
 
             Button(
                 onClick = {

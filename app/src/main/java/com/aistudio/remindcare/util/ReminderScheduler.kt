@@ -14,8 +14,8 @@ import java.util.Calendar
 object ReminderScheduler {
 
     private const val TAG = "ReminderScheduler"
-    // 2-minute safety buffer to prevent early-trigger infinite rescheduling loops
-    private const val EARLY_TRIGGER_BUFFER_MS = 120_000L
+    // 10-second safety buffer to prevent early-trigger infinite rescheduling loops
+    private const val EARLY_TRIGGER_BUFFER_MS = 10_000L
 
     fun scheduleReminder(context: Context, reminder: Reminder) {
         if (!reminder.isActive || reminder.isDeleted) {

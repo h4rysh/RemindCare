@@ -16,7 +16,8 @@ class UpdateCaregiverProfileUseCase(
         settingsRepository.updateSettings(
             current.copy(
                 caregiverName = caregiverName,
-                caregiverPin = hashedPin
+                caregiverPin = hashedPin,
+                role = "Caregiver"
             )
         )
     }

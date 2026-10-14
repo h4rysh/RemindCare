@@ -46,7 +46,7 @@ class SettingsUseCasesTest {
     }
 
     @Test
-    fun updatePatientProfileUseCase_updatesPatientNameOnly() = runTest {
+    fun updatePatientProfileUseCase_updatesPatientNameAndPersistsRole() = runTest {
         val existing = AppSettings(patientName = "Old Name", fontSize = "Large")
         coEvery { settingsRepository.getSettingsDirect() } returns existing
 
@@ -54,13 +54,13 @@ class SettingsUseCasesTest {
 
         coVerify(exactly = 1) {
             settingsRepository.updateSettings(match {
-                it.patientName == "Eleanor Vance" && it.fontSize == "Large"
+                it.patientName == "Eleanor Vance" && it.fontSize == "Large" && it.role == "Patient"
             })
         }
     }
 
     @Test
-    fun updateCaregiverProfileUseCase_hashesPinWhenProvided() = runTest {
+    fun updateCaregiverProfileUseCase_hashesPinAndPersistsRole() = runTest {
         val existing = AppSettings(caregiverName = "Old Name")
         coEvery { settingsRepository.getSettingsDirect() } returns existing
 
@@ -70,7 +70,8 @@ class SettingsUseCasesTest {
             settingsRepository.updateSettings(match {
                 it.caregiverName == "David Vance" &&
                 it.caregiverPin.startsWith("pbkdf2\$") &&
-                HashUtils.verifyPin("5678", it.caregiverPin)
+                HashUtils.verifyPin("5678", it.caregiverPin) &&
+                it.role == "Caregiver"
             })
         }
     }

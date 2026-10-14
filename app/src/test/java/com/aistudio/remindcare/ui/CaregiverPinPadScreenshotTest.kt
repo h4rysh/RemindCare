@@ -15,7 +15,7 @@ import org.robolectric.annotation.GraphicsMode
 
 @RunWith(AndroidJUnit4::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
-@Config(sdk = [33], qualifiers = RobolectricDeviceQualifiers.Pixel5)
+@Config(sdk = [33], application = android.app.Application::class, qualifiers = RobolectricDeviceQualifiers.Pixel5)
 class CaregiverPinPadScreenshotTest {
 
     @get:Rule

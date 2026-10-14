@@ -19,9 +19,12 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -99,22 +102,44 @@ fun PatientHomeScreen(
             )
 
             val context = LocalContext.current
-            
+            val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
+
             // Check DND access
             val notificationManager = remember {
                 context.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
             }
-            val hasDndAccess = remember { notificationManager?.isNotificationPolicyAccessGranted ?: false }
-            
             // Check exact alarm permission
             val alarmManager = remember {
                 context.getSystemService(Context.ALARM_SERVICE) as? AlarmManager
             }
-            val canScheduleExact = remember {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    alarmManager?.canScheduleExactAlarms() ?: false
-                } else {
-                    true
+
+            var hasDndAccess by remember {
+                mutableStateOf(notificationManager?.isNotificationPolicyAccessGranted ?: false)
+            }
+            var canScheduleExact by remember {
+                mutableStateOf(
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                        alarmManager?.canScheduleExactAlarms() ?: false
+                    } else {
+                        true
+                    }
+                )
+            }
+
+            DisposableEffect(lifecycleOwner) {
+                val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
+                    if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) {
+                        hasDndAccess = notificationManager?.isNotificationPolicyAccessGranted ?: false
+                        canScheduleExact = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                            alarmManager?.canScheduleExactAlarms() ?: false
+                        } else {
+                            true
+                        }
+                    }
+                }
+                lifecycleOwner.lifecycle.addObserver(observer)
+                onDispose {
+                    lifecycleOwner.lifecycle.removeObserver(observer)
                 }
             }
             

@@ -2,8 +2,10 @@ package com.aistudio.remindcare.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -36,7 +38,8 @@ fun CaregiverSetupScreen(viewModel: RemindCareViewModel, onComplete: () -> Unit)
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(24.dp),
+                .padding(24.dp)
+                .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             Text(
@@ -47,7 +50,7 @@ fun CaregiverSetupScreen(viewModel: RemindCareViewModel, onComplete: () -> Unit)
             )
             
             Text(
-                text = "A PIN ensures only you can edit the schedule or change sensitive settings.",
+                text = "A 4-digit PIN ensures only you can edit the schedule or change sensitive settings.",
                 fontSize = 16.sp,
                 color = TextGray
             )
@@ -68,8 +71,8 @@ fun CaregiverSetupScreen(viewModel: RemindCareViewModel, onComplete: () -> Unit)
 
             OutlinedTextField(
                 value = pin,
-                onValueChange = { if (it.length <= 6 && it.all { char -> char.isDigit() }) pin = it },
-                label = { Text("Create a 4-6 Digit PIN") },
+                onValueChange = { if (it.length <= 4 && it.all { char -> char.isDigit() }) pin = it },
+                label = { Text("Create a 4-Digit PIN") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
                 visualTransformation = PasswordVisualTransformation(),
                 modifier = Modifier.fillMaxWidth(),
@@ -82,14 +85,15 @@ fun CaregiverSetupScreen(viewModel: RemindCareViewModel, onComplete: () -> Unit)
                 )
             )
 
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.weight(1f, fill = false))
+            Spacer(modifier = Modifier.height(16.dp))
 
             Button(
                 onClick = {
                     viewModel.updateCaregiverProfile(name, pin)
                     onComplete()
                 },
-                enabled = name.isNotBlank() && pin.length >= 4,
+                enabled = name.isNotBlank() && pin.length == 4,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(64.dp),

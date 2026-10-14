@@ -27,7 +27,7 @@ import java.util.*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateReminderScreen(viewModel: RemindCareViewModel, reminderId: Long? = null, onBack: () -> Unit) {
-    val reminders by viewModel.activeReminders.collectAsState()
+    val reminders by viewModel.allReminders.collectAsState()
     val existingReminder = remember(reminders, reminderId) { reminders.find { it.id == reminderId } }
 
     var title by remember(existingReminder) { mutableStateOf(existingReminder?.title ?: "") }
@@ -180,6 +180,7 @@ fun CreateReminderScreen(viewModel: RemindCareViewModel, reminderId: Long? = nul
                 onClick = {
                     val reminder = Reminder(
                         id = existingReminder?.id ?: 0L,
+                        uuid = existingReminder?.uuid ?: java.util.UUID.randomUUID().toString(),
                         title = title,
                         type = type,
                         time = time,
@@ -189,6 +190,8 @@ fun CreateReminderScreen(viewModel: RemindCareViewModel, reminderId: Long? = nul
                         medicineLocation = location.takeIf { type == "Medicine" && it.isNotBlank() },
                         additionalNotes = notes.takeIf { it.isNotBlank() },
                         photoRequired = photoRequired,
+                        imageUri = existingReminder?.imageUri,
+                        soundUri = existingReminder?.soundUri,
                         isActive = existingReminder?.isActive ?: true
                     )
                     if (existingReminder != null) {

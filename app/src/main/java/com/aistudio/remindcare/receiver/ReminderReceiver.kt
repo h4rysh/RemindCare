@@ -27,24 +27,6 @@ class ReminderReceiver : BroadcastReceiver() {
         val action = intent.action
         Log.d(TAG, "onReceive action: $action")
 
-        // 1. System re-anchoring broadcasts (Reboot, Time changed, Timezone changed, App upgraded)
-        if (action in SYSTEM_ACTIONS) {
-            AlarmWakeLockManager.acquire(context, 30_000L)
-            val pendingResult = goAsync()
-            CoroutineScope(Dispatchers.IO).launch {
-                try {
-                    Log.d(TAG, "System configuration changed ($action), rescheduling all active alarms")
-                    ReminderScheduler.rescheduleAll(context)
-                    AlarmWatchdogWorker.schedule(context)
-                } catch (e: Exception) {
-                    Log.e(TAG, "Error handling system change broadcast", e)
-                } finally {
-                    AlarmWakeLockManager.release()
-                    pendingResult.finish()
-                }
-            }
-            return
-        }
 
         val reminderId = intent.getLongExtra(EXTRA_REMINDER_ID, -1L)
         if (reminderId == -1L) {
@@ -225,12 +207,6 @@ class ReminderReceiver : BroadcastReceiver() {
         const val CODE_MISSED_CHECK = 4
         const val CODE_SNOOZE_ALARM = 5
 
-        private val SYSTEM_ACTIONS = setOf(
-            Intent.ACTION_BOOT_COMPLETED,
-            Intent.ACTION_TIME_CHANGED,
-            Intent.ACTION_TIMEZONE_CHANGED,
-            Intent.ACTION_MY_PACKAGE_REPLACED
-        )
 
         fun createNotificationChannel(context: Context) {
             ReminderAlarmService.createNotificationChannel(context)
