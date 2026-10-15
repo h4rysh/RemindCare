@@ -69,7 +69,15 @@ class ReminderAlarmService : Service() {
 
                 // 1. Build and post foreground notification
                 val notification = buildForegroundNotification(reminder)
-                startForeground(NOTIFICATION_ID_OFFSET + reminder.id.toInt(), notification)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    startForeground(
+                        NOTIFICATION_ID_OFFSET + reminder.id.toInt(),
+                        notification,
+                        android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
+                    )
+                } else {
+                    startForeground(NOTIFICATION_ID_OFFSET + reminder.id.toInt(), notification)
+                }
 
                 // 2. Trigger audio, TTS, and active alert state
                 GlobalAlarmState.triggerAlert(applicationContext, reminder)
