@@ -215,6 +215,9 @@ class FirebaseSyncRepository(private val context: Context) : SyncRepository {
                 return@addSnapshotListener
             }
             if (snapshot != null) {
+                if (snapshot.metadata.hasPendingWrites()) {
+                    return@addSnapshotListener
+                }
                 val reminders = snapshot.toObjects(Reminder::class.java).filter { !it.isDeleted }
                 trySend(reminders)
             }

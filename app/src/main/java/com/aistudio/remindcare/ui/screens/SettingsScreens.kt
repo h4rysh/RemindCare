@@ -32,6 +32,7 @@ fun PatientSettingsScreen(
     viewModel: RemindCareViewModel,
     settings: AppSettings,
     onBack: () -> Unit,
+    onNavigateToPairing: () -> Unit,
     onSwitchRole: () -> Unit
 ) {
     var showPinDialog by remember { mutableStateOf(false) }
@@ -77,7 +78,12 @@ fun PatientSettingsScreen(
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text("Caregiver Status", fontSize = 14.sp, color = TextGray)
                     if (settings.isPaired) {
-                        Text("Connected", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = SageGreen)
+                        Text(
+                            text = if (settings.connectedCaregiverName.isNotBlank()) "Connected with ${settings.connectedCaregiverName}" else "Connected",
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = SageGreen
+                        )
                         Spacer(modifier = Modifier.height(16.dp))
                         Button(
                             onClick = {
@@ -97,6 +103,23 @@ fun PatientSettingsScreen(
                         }
                     } else {
                         Text("Not Connected", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = TextDark)
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "Pair with your caregiver to allow remote reminder updates and health tracking.",
+                            fontSize = 14.sp,
+                            color = TextGray
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Button(
+                            onClick = onNavigateToPairing,
+                            colors = ButtonDefaults.buttonColors(containerColor = NavyPrimary),
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(52.dp)
+                        ) {
+                            Text("Connect Now", fontWeight = FontWeight.Bold, color = Color.White)
+                        }
                     }
                 }
             }
@@ -196,6 +219,7 @@ fun CaregiverSettingsScreen(
     viewModel: RemindCareViewModel,
     settings: AppSettings,
     onBack: () -> Unit,
+    onNavigateToPairing: () -> Unit,
     onSwitchRole: () -> Unit
 ) {
     var showPinDialog by remember { mutableStateOf(false) }
@@ -240,7 +264,12 @@ fun CaregiverSettingsScreen(
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text("Status", fontSize = 14.sp, color = TextGray)
                     if (settings.isPaired) {
-                        Text("Connected", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = SageGreen)
+                        Text(
+                            text = if (settings.connectedPatientName.isNotBlank()) "Connected with ${settings.connectedPatientName}" else "Connected",
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = SageGreen
+                        )
                         Spacer(modifier = Modifier.height(16.dp))
                         Button(
                             onClick = {
@@ -260,6 +289,23 @@ fun CaregiverSettingsScreen(
                         }
                     } else {
                         Text("Not Connected", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = TextDark)
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "Pair with a patient's device to schedule medication reminders and monitor daily adherence in real-time.",
+                            fontSize = 14.sp,
+                            color = TextGray
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Button(
+                            onClick = onNavigateToPairing,
+                            colors = ButtonDefaults.buttonColors(containerColor = NavyPrimary),
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(52.dp)
+                        ) {
+                            Text("Pair with Patient", fontWeight = FontWeight.Bold, color = Color.White)
+                        }
                     }
                 }
             }

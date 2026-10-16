@@ -8,6 +8,7 @@ import android.os.Build
 import android.provider.Settings
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -15,6 +16,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
@@ -85,13 +88,109 @@ fun PatientHomeScreen(
                 .padding(padding)
                 .padding(horizontal = 24.dp)
         ) {
-            Text(
-                text = "Hello${if (settings.patientName.isNotBlank()) ", ${settings.patientName}" else ""}",
-                style = MaterialTheme.typography.displaySmall,
-                fontWeight = FontWeight.Black,
-                color = NavyPrimary,
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.padding(bottom = 8.dp)
-            )
+            ) {
+                Text(
+                    text = "Hello${if (settings.patientName.isNotBlank()) ", ${settings.patientName}" else ""}",
+                    style = MaterialTheme.typography.displaySmall,
+                    fontWeight = FontWeight.Black,
+                    color = NavyPrimary,
+                    modifier = Modifier.weight(1f, fill = false)
+                )
+                if (settings.isPaired) {
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Surface(
+                        shape = CircleShape,
+                        color = SageGreenLight,
+                        modifier = Modifier
+                            .minimumInteractiveComponentSize()
+                            .clickable { onNavigateToSettings() }
+                            .semantics { contentDescription = "Connected with ${settings.connectedCaregiverName}. Tap for settings." }
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.CheckCircle,
+                                contentDescription = null,
+                                tint = SageGreen,
+                                modifier = Modifier.size(14.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = if (settings.connectedCaregiverName.isNotBlank()) "with ${settings.connectedCaregiverName}" else "Connected",
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = SageGreen
+                            )
+                        }
+                    }
+                }
+            }
+
+            if (!settings.isPaired) {
+                Card(
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = NavyPrimary.copy(alpha = 0.08f)),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, NavyPrimary.copy(alpha = 0.2f)),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Surface(
+                            shape = CircleShape,
+                            color = NavyPrimary.copy(alpha = 0.12f),
+                            modifier = Modifier.size(40.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    imageVector = Icons.Default.Link,
+                                    contentDescription = null,
+                                    tint = NavyPrimary,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "Connect with Caregiver",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = NavyPrimary
+                            )
+                            Text(
+                                text = "Share your code so your caregiver can manage reminders & track health",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = TextDark.copy(alpha = 0.75f)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Button(
+                            onClick = onNavigateToPairing,
+                            colors = ButtonDefaults.buttonColors(containerColor = NavyPrimary),
+                            shape = RoundedCornerShape(12.dp),
+                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                            modifier = Modifier.heightIn(min = 48.dp)
+                        ) {
+                            Text(
+                                text = "Pair",
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                        }
+                    }
+                }
+            }
             
             Text(
                 text = "Today's plan",

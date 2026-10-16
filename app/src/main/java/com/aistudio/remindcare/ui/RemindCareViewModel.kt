@@ -169,10 +169,13 @@ class RemindCareViewModel(
         }
     }
 
+    private val isApplyingCloudReminders = java.util.concurrent.atomic.AtomicBoolean(false)
+
     private fun launchSyncListeners() {
         // Caregiver syncing Reminders TO Cloud
         viewModelScope.launch(Dispatchers.IO) {
             repository.allReminders.collect { reminders ->
+                if (isApplyingCloudReminders.get()) return@collect
                 val currentSettings = settings.value
                 if ((currentSettings.role == "Caregiver") &&
                     currentSettings.isPaired &&
@@ -183,29 +186,53 @@ class RemindCareViewModel(
             }
         }
 
-        // Patient listening to Reminders FROM Cloud
+        // Patient and Caregiver listening to Reminders FROM Cloud
         viewModelScope.launch(Dispatchers.IO) {
             settings.flatMapLatest { currentSettings ->
                 if ((currentSettings.role == "Patient") && currentSettings.isPaired) {
                     val patientId = repository.syncRepository.getDeviceId()
                     repository.syncRepository.listenForCloudReminders(patientId)
+                } else if ((currentSettings.role == "Caregiver") && currentSettings.isPaired && currentSettings.connectedPatientId.isNotBlank()) {
+                    repository.syncRepository.listenForCloudReminders(currentSettings.connectedPatientId)
                 } else {
                     kotlinx.coroutines.flow.emptyFlow()
                 }
             }.collect { cloudReminders ->
-                // Synchronize locally
-                val localIds = repository.allReminders.first().asSequence().map { it.id }.toSet()
-                val cloudIds = cloudReminders.asSequence().map { it.id }.toSet()
+                isApplyingCloudReminders.set(true)
+                try {
+                    val localReminders = repository.allReminders.first()
+                    val localMapByUuid = localReminders.filter { it.uuid.isNotBlank() }.associateBy { it.uuid }
+                    val cloudMapByUuid = cloudReminders.filter { it.uuid.isNotBlank() }.associateBy { it.uuid }
 
-                for (r in cloudReminders) {
-                    repository.insertReminder(r)
-                    ReminderScheduler.scheduleReminder(context, r)
-                }
+                    // Insert or update changed reminders from cloud
+                    for (cr in cloudReminders) {
+                        val existingLocal = if (cr.uuid.isNotBlank()) localMapByUuid[cr.uuid] else null
+                        if (existingLocal == null) {
+                            repository.insertReminder(cr)
+                            if (settings.value.role == "Patient") {
+                                ReminderScheduler.scheduleReminder(context, cr)
+                            }
+                        } else if (existingLocal.copy(id = cr.id, updatedAtMillis = cr.updatedAtMillis) != cr) {
+                            val updated = cr.copy(id = existingLocal.id)
+                            repository.updateReminder(updated)
+                            if (settings.value.role == "Patient") {
+                                ReminderScheduler.scheduleReminder(context, updated)
+                            }
+                        }
+                    }
 
-                val toDelete = localIds - cloudIds
-                for (id in toDelete) {
-                    repository.deleteReminderById(id)
-                    ReminderScheduler.cancelReminder(context, id)
+                    // Delete reminders removed from cloud
+                    for (local in localReminders) {
+                        if (local.uuid.isNotBlank() && !cloudMapByUuid.containsKey(local.uuid)) {
+                            repository.deleteReminderById(local.id)
+                            if (settings.value.role == "Patient") {
+                                ReminderScheduler.cancelReminder(context, local.id)
+                            }
+                        }
+                    }
+                } finally {
+                    kotlinx.coroutines.delay(200L)
+                    isApplyingCloudReminders.set(false)
                 }
             }
         }

@@ -140,6 +140,7 @@ fun RemindCareNavGraph(
                 viewModel = viewModel,
                 settings = settings,
                 onBack = { navController.popBackStack() },
+                onNavigateToPairing = { navController.navigate("pairing_patient") },
                 onSwitchRole = {
                     viewModel.setRole("")
                     navController.navigate("welcome") { popUpTo(0) { inclusive = true } }
@@ -152,6 +153,7 @@ fun RemindCareNavGraph(
                 viewModel = viewModel,
                 settings = settings,
                 onBack = { navController.popBackStack() },
+                onNavigateToPairing = { navController.navigate("pairing_caregiver") },
                 onSwitchRole = {
                     viewModel.setRole("")
                     navController.navigate("welcome") { popUpTo(0) { inclusive = true } }

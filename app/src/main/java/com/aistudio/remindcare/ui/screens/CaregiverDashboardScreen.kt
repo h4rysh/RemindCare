@@ -11,8 +11,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Link
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -41,7 +43,11 @@ fun CaregiverDashboardScreen(
 ) {
     val allReminders by viewModel.allReminders.collectAsState(initial = emptyList())
     val history by viewModel.history.collectAsState(initial = emptyList())
-    val patientName = if (settings.patientName.isNotBlank()) settings.patientName else "Patient"
+    val patientName = when {
+        settings.connectedPatientName.isNotBlank() -> settings.connectedPatientName
+        settings.patientName.isNotBlank() -> settings.patientName
+        else -> "Patient"
+    }
     
     var selectedTab by remember { mutableStateOf(0) }
 
@@ -81,13 +87,110 @@ fun CaregiverDashboardScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            Text(
-                text = "Tracking $patientName",
-                fontSize = 28.sp,
-                fontWeight = FontWeight.Black,
-                color = NavyPrimary,
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.padding(start = 24.dp, end = 24.dp, bottom = 16.dp)
-            )
+            ) {
+                Text(
+                    text = "Tracking $patientName",
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.Black,
+                    color = NavyPrimary,
+                    modifier = Modifier.weight(1f, fill = false)
+                )
+                if (settings.isPaired) {
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Surface(
+                        shape = CircleShape,
+                        color = SageGreenLight,
+                        modifier = Modifier
+                            .minimumInteractiveComponentSize()
+                            .clickable { onNavigateToSettings() }
+                            .semantics { contentDescription = "Paired with $patientName. Tap for settings." }
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.CheckCircle,
+                                contentDescription = null,
+                                tint = SageGreen,
+                                modifier = Modifier.size(14.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = "Paired",
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = SageGreen
+                            )
+                        }
+                    }
+                }
+            }
+
+            if (!settings.isPaired) {
+                Card(
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = AmberWarning.copy(alpha = 0.12f)),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, AmberWarning.copy(alpha = 0.3f)),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp)
+                        .padding(bottom = 16.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Surface(
+                            shape = CircleShape,
+                            color = AmberWarning.copy(alpha = 0.2f),
+                            modifier = Modifier.size(40.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    imageVector = Icons.Default.Link,
+                                    contentDescription = null,
+                                    tint = AmberWarning,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "No Patient Connected",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = AmberWarning
+                            )
+                            Text(
+                                text = "Enter patient's pairing code to sync alarms & track adherence in real-time",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = TextDark.copy(alpha = 0.75f)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Button(
+                            onClick = onNavigateToPairing,
+                            colors = ButtonDefaults.buttonColors(containerColor = NavyPrimary),
+                            shape = RoundedCornerShape(12.dp),
+                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                            modifier = Modifier.heightIn(min = 48.dp)
+                        ) {
+                            Text(
+                                text = "Pair",
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                        }
+                    }
+                }
+            }
             
             TabRow(
                 selectedTabIndex = selectedTab,
